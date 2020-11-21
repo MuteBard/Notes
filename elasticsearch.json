@@ -1,0 +1,3686 @@
+{
+	"topic": "Elasticsearch",
+	"course": "https://www.udemy.com/course/elasticsearch-complete-guide/",
+	"setup": {
+		"elasticsearch": "bin/elasticsearch",
+		"kibana": "bin/kibana"
+	},
+	"devTools": "http://localhost:5601/app/dev_tools#/console",
+	"server": "http://localhost:5601",
+	"terminology": {
+		"node": {
+			"definition": ["\tAn instance of Elasticsearch that stores data"]
+		},
+		"cluster": {
+			"definition": [
+				"\tA collection of related nodes that together contain all of out data,",
+				"and independent of eachother by default"
+			]
+		},
+		"document": {
+			"definition": [
+				"\tThe unit of data that you store within your cluster",
+				"documents are JSON objects containing whatever data you desire",
+				"When you index a document, the original JSON object that you sent to Elasticseach",
+				"is stored alongwith some metadata that Elasticsearch uses internally"
+			],
+
+			"questions": [
+				"\tHow are documents organized? Documents are organized with the help of indicies, every document within elasicsearch",
+				"is stored within an index. An index groups documents together logically as will as provide",
+				"configuration options that are related to scalabilty and availablity"
+			],
+			"example": {
+				"input": {
+					"name": "Bo Andersen",
+					"country": "Denmark"
+				},
+				"stored_as": {
+					"_index": "people",
+					"_type": "_doc",
+					"_id": "123",
+					"_version": 1,
+					"_seq_no": 0,
+					"_primary_term": 1,
+					"_source": {
+						"name": "Bo Andersen",
+						"country": "Denmark"
+					}
+				}
+			}
+		},
+		"index": {
+			"definition": [
+				"\tAn index groups documents together logically as will as provide",
+				"configuration options that are related to scalabilty and availablity. It is a collection",
+				"of documents that have similar characteristics and are logically related",
+				"An index may contain as many documents as you want, sothere is no hard limit",
+				"Search queries run agains indices",
+				"An index is configured to store its data within a number of shards, which may be stored across multiple nodes"
+			],
+			"example": {
+				"stored_as": {
+					"_index": "people",
+					"_type": "_doc",
+					"_id": "123",
+					"_version": 1,
+					"_seq_no": 0,
+					"_primary_term": 1,
+					"_source": {
+						"name": "Bo Andersen",
+						"country": "Denmark"
+					}
+				},
+				"index": "people"
+			}
+		},
+		"kibana": {
+			"definition": [
+				"\tKibana is a web interface for elasticsearch. Kibana uses the REST API under the hood.",
+				"It persists data into Elasticsearch indices. This means that if you set up a fresh instance of",
+				"kibana and point it to an existing elasticsearch cluster, all of the existing Kibana data will be loaded"
+			]
+		},
+		"sharding": {
+			"definition": [
+				"\tSharding is a way to divide indices into smaller pieces. Each piece is reffered to as a shard",
+				"Sharding is done at the index level, not at cluster or node level. One index might contain 1 B documents",
+				"while another might have a few hundred. The main reason for dividing an index into multiple shards",
+				"is to be able to store more documents and to make it easier to fit large indices onto nodes",
+				"It also enables search queries to be run on multiple shards at the same time, increasing performance"
+			]
+		},
+		"shard": {
+			"definition": [
+				"\tIs an independent index somewhat. A shard has no predefined size, it grows as documents are added to it",
+				"A shard may store up to about two billion documents"
+			]
+		},
+		"pri": {
+			"definition": [
+				"\tA shard that has been replicated (the source), is call a primary shard",
+				"Default is 1 ",
+				"It is a column that represents the number of shards that a given index has",
+				"A primary shard and its replica shards are referred to as a replication group"
+			]
+		},
+		"replication": {
+			"definition": [
+				"\tReplication is configured at the index level",
+				"Replications works by creating copies of shards, referred to as replica shards",
+				"A shard that has been replicated (the source), is call a primary shard",
+				"A primary shard and its replica shards are referred to as a replication group",
+				"Replica shards are a comple copy of a shard",
+				"A replica shard can serve search requests, exactly like its primary shard",
+				"Number of replicas can be configured at index creation",
+				"Replica shards",
+
+				"Rule of thumb: Replicate shards once if data loss is not a disaster",
+				"For critical systems, data should be replicated at least twice"
+			],
+			"questions": [
+				"\tHow does this help if the entire disk stops working and we lose all of its data? To prevent this from happening, replica shards are never stored on the same node as their primary shard",
+				"This means that if one node disappears, there will always be at least one copy of a shard's data available",
+				"on a different node"
+			]
+		},
+
+		"snapshots": {
+			"definition": [
+				"\tElasticsearch supports taking snapshots as backups, either at index level or cluster level at any",
+				"given point in time"
+			]
+		},
+		"throughput": {
+			"definition": [
+				"\tReplica shards of a replication group can serve different seach requests simultanously",
+				"this increases the number of request that can be handled at the same time",
+				"Elasticsearch intelligently routes request to the best shard."
+			]
+		},
+		"immutable": {
+			"definition": [
+				"\tElasticsearch documents are immutable, we actually replaced doucments. Documents are reindexed with the same id"
+			]
+		},
+		"_source": {
+			"definition": [
+				"\tA property gives us an object containg the document's fields"
+			],
+			"example": {
+				"_index": "products",
+				"_type": "_doc",
+				"_id": "100",
+				"_version": 1,
+				"_seq_no": 0,
+				"_primary_term": 1,
+				"found": true,
+				"_source": {
+					"name": "Coffee Maker",
+					"price": 64,
+					"in_stock": 10
+				}
+			}
+		},
+		"params": {
+			"definition": [
+				"\tA object consisting of key value pairs where each pair corresponds to a parameter name and value when creating a script"
+			],
+			"example": {
+				"source": "ctx._source.in_stock -= params.quantity",
+				"params": {
+					"quantity": 4
+				}
+			}
+		},
+		"upserts": {
+			"definition": [
+				"\tupserts, another way of updating documents. It means to conditionally update or insert a document based on whether or not the document already exists",
+				"SO if the document already exists, a script is run, and if it doesnt, a new document is indexed"
+			]
+		},
+		"routing": {
+			"definition": []
+		},
+		"versioning": {
+			"definition": [
+				"\tElastic search actually versions the docuemnt that we index, it is a simple form of versioning and not a revision history of documents",
+				"Elasticsearch only stores the most recent verion of a document. It stores an _version metadata field with every document. The value is an integer",
+				"that is incremented by one when modifying a document"
+			],
+			"example": {
+				"_index": "products",
+				"_type": "_doc",
+				"_id": "100",
+				"_version": 8,
+				"_seq_no": 7,
+				"_primary_term": 1,
+				"found": true,
+				"_source": {
+					"name": "Coffee Maker",
+					"price": 64,
+					"in_stock": 3,
+					"tags": ["electronics"]
+				}
+			}
+		},
+		"Optimistic-concurrency-control": {
+			"definition": [
+				"\tThis is essentially a way to prevent that an old version of a document overwrites a more recent one. Especially if write operations arrive out of sequence"
+			],
+			"example": {
+				"progression": [
+					{
+						"visitorA": {
+							"price": 99,
+							"instock": 6
+						},
+						"visitorB": {
+							"price": 99,
+							"instock": 6
+						},
+						"elasticsearch": {
+							"instock": 6
+						}
+					},
+					{
+						"visitorA": {
+							"price": 99,
+							"instock": 6
+						},
+						"visitorB": {
+							"price": 99,
+							"instock": 6
+						},
+						"elasticsearch": {
+							"op": ["vistorA retrieves product", "vistorB retrieves product"],
+							"instock": 5
+						}
+					}
+				]
+			},
+			"explain": [
+				"\tWe could be selling items not in stock eventually, which can result inot a bad customer experience. versioning was an option to resolve this but it failed in some ways.",
+				"Currently, the approach is to use primary terms and sequence numbers rather than versioning"
+			]
+		},
+		"text-analysis": {
+			"definition": [
+				"\tApplicable to text fields and values. Text values are analyzed when indexing documents.",
+				"The result is stored in data stuctures that are efficient for searching.",
+				"When we retrived docuements, you saw how values that we indexed were returned under an _source key",
+				"The _source object is not used when searching for documents. The text is processed before being stored"
+			]
+		},
+		"analyzer": {
+			"definition": [
+				"\tAnalyzer contains the character filters, tokenizer and token filters"
+			]
+		},
+		"character-filters": {
+			"definition": [
+				"\tAdds, removes or changes characters. Analyzers contain zero or more character filters",
+				"Character filters are applied in the order in which they are specified"
+			],
+			"example": {
+				"filter": "html_strip",
+				"input": "I&apos;m in a <em>good</em> mood&nbsp;-&nbsp;and I <strong>love</strong> açaí",
+				"output": "I'm in a good mood - and I love açaí"
+			}
+		},
+		"tokenizers": {
+			"definition": [
+				"\tAn analyzer contains one tokenizer, Tokenizes a string  by whitespace, hyphens and such",
+				"puctuation, commas, periods, exclamation marks, etc."
+			],
+			"example": {
+				"input": "I REALLY like beer",
+				"output": ["I", "REALLY ", "like", "beer"]
+			}
+		},
+		"token-filters": {
+			"definition": [
+				"\tReceive the output of tokenizer as input. A token filter can add, remove, or modify token",
+				"An anaylzer contains zero or more token filters"
+			],
+			"example": {
+				"filter": "lowercase",
+				"input": ["I", "REALLY", "like", "beer"],
+				"output": ["i", "really", "like", "beer"]
+			}
+		},
+		"inverted-index": {
+			"definition": [
+				"\tAn inverted index is a sorted mapping of the unique terms from all the documents containing a value for",
+				"a given field, to which documents contain those terms",
+				"What makes an inverted index so powerful is how efficient it is to look up a term and find the documents",
+				"in which the term appears",
+				"An inverted index is actually created for each text field"
+			]
+		},
+		"BKD-trees": {
+			"definition": ["\tNumerical values, and geospatial data is stored here"]
+		},
+		"mapping": {
+			"definition": [
+				"\tmapping defines the structure of documents (fields and their data types)",
+				"Also used to confugure how values are indexed"
+			],
+			"example": {
+				"sql": [
+					"CREATE TABLE employees (",
+					"id INT AUTO_INCREMENT PRIMARY KEY",
+					"first_name VARCHAR(255) NOT NULL",
+					"last-name VARCHAR(255) NOT NULL",
+					"dob DATE",
+					"description TEXT",
+					"created_at TIMESTAMO DEFAULT CURRENT_TIMESTAMP"
+				],
+				"elasticsearch": {
+					"mappings": {
+						"properties": {
+							"id": { "type": "integer" },
+							"first_name": { "type": "text" },
+							"last_name": { "type": "text" },
+							"dob": { "type": "date" },
+							"description": { "type": "text" },
+							"created_at": { "type": "date" }
+						}
+					}
+				}
+			}
+		},
+		"explicit-mapping": {
+			"definition": ["\tWe define field mappings ourselves"]
+		},
+		"dynamic-mapping": {
+			"definition": ["\tElasticsearch generates field mappings for us"]
+		}
+	},
+	"datatypes": {
+		"object": {
+			"uses": [
+				"\tUsed for any JSON object",
+				"Object may be nested",
+				"The way this is mapped is that a properties key is added of objects instead of specifying the type key",
+				"Object are not stored as object in Apache Lucene, they are flattened"
+			],
+			"example": {
+				"object": {
+					"name": "Coffee Maker",
+					"price": 64.2,
+					"in_stock": 10,
+					"is_active": true,
+					"manufacturer": {
+						"name": "Nespresso",
+						"country": "Switzerland"
+					}
+				},
+				"field-mapping": {
+					"name": { "type": "text" },
+					"price": { "type": "double" },
+					"in_stock": { "type": "short" },
+					"is_active": { "type": "boolean" },
+					"manufacturer": {
+						"properties": {
+							"name": { "type": "text" },
+							"country": { "type": "text" }
+						}
+					}
+				},
+				"flattened": {
+					"name": "Coffee Maker",
+					"price": 64.2,
+					"in_stock": 10,
+					"is_active": true,
+					"manufacturer.name": "Nespresso",
+					"manufacturer.country": "Switzerland"
+				}
+			},
+			"problematic-example": {
+				"object": {
+					"name": "Coffee Maker",
+					"reviews": [
+						{
+							"rating": 5.0,
+							"author": "Average Joe",
+							"description": "Havent slept for days...Amazing!"
+						},
+						{
+							"rating": 3.5,
+							"author": "John Doe",
+							"description": "Could be better"
+						}
+					]
+				},
+				"flattened": {
+					"name": "Coffee Maker",
+					"reviews.ratings": [5.0, 3.5],
+					"reviews.author": ["Average Joe", "John Doe"],
+					"reviews.description": [
+						"Havent slept for days...Amazing!",
+						"Could be better"
+					]
+				},
+
+				"explain": [
+					"\tThe field values were all mixed tohether when the document was indexed,",
+					"So the relationship between the object keys was lost. When this happens, Elasticsearch",
+					"Does not know that ther is a relationship between John Doe and 3.5",
+					"To solve this, there is a data type called nested"
+				]
+			}
+		},
+		"nested": {
+			"uses": [
+				"\tSimilar to the object data type, but maintains object relationships between object values when an array of objects",
+				"is indexed. Using this data type enables us to query objects independently, meaning that the object values",
+				"are not mixed together"
+			],
+			"example": {
+				"object": {
+					"name": "Coffee Maker",
+					"reviews": [
+						{
+							"rating": 5.0,
+							"author": "Average Joe",
+							"description": "Havent slept for days...Amazing!"
+						},
+						{
+							"rating": 3.5,
+							"author": "John Doe",
+							"description": "Could be better"
+						}
+					]
+				},
+				"field-mapping": {
+					"name": { "type": "text" },
+					"reviews": { "type": "nested" }
+				},
+
+				"explain": [
+					"\tnested object are stored as hidden documents and wont sho up in search results unless we query them directly"
+				]
+			}
+		},
+		"keyword": {
+			"uses": [
+				"\tUsed for exact matching values. this data type is used for filtering, sorting and aggregating document",
+				"Searching for articles with status of PUBLISHED"
+			]
+		},
+		"text": {
+			"uses": [
+				"\tUsed for full text searches",
+				"Searching the body text of an article"
+			]
+		},
+		"arrays-DoNotExist": {
+			"uses": [
+				"\tThere is no such thing as an array data type",
+				"Any field may contain zero or more values"
+			],
+			"example": {
+				"field-mapping": {
+					"products": {
+						"mappings": {
+							"properties": {
+								"tags": {
+									"type": "text"
+								}
+							}
+						}
+					}
+				},
+				"explain": [
+					"\tAll of the values of the array must be of the same data type"
+				],
+				"query": {
+					"verb": "POST",
+					"path": {
+						"index": "products",
+						"api": "_analyze",
+						"body": {
+							"text": ["Strings are simply", "merged together"]
+						}
+					},
+					"complete": "POST /products/_analyze {\"text\": [\"Strings are simply\", \"merged together\"]}"
+				},
+				"after": {
+					"tokens": [
+						{
+							"token": "strings",
+							"start_offset": 0,
+							"end_offset": 7,
+							"type": "<ALPHANUM>",
+							"position": 0
+						},
+						{
+							"token": "are",
+							"start_offset": 8,
+							"end_offset": 11,
+							"type": "<ALPHANUM>",
+							"position": 1
+						},
+						{
+							"token": "simply",
+							"start_offset": 12,
+							"end_offset": 18,
+							"type": "<ALPHANUM>",
+							"position": 2
+						},
+						{
+							"token": "merged",
+							"start_offset": 19,
+							"end_offset": 25,
+							"type": "<ALPHANUM>",
+							"position": 3
+						},
+						{
+							"token": "together",
+							"start_offset": 26,
+							"end_offset": 34,
+							"type": "<ALPHANUM>",
+							"position": 4
+						}
+					]
+				}
+			}
+		},
+		"date": {
+			"uses": [
+				"\tDate is specified in one of three ways:",
+				"Specially formatted strings",
+				"Milliseconds since the epoch",
+				"Seconds since the epoch",
+				"Epoch refers to the 1st of January 1970",
+				"Dates are stored internally as milliseconds since the epoch",
+				"Any valid value that yous supply at index time is converted to a long value",
+				"If the date contains a time zone, it will be converted to UTC timezone first"
+			]
+		}
+	},
+	"apis": {
+		"_cat": {
+			"definition": ["\tOutputs data into a human readable format"]
+		},
+		"_nodes": {
+			"definition": ["\tList all the nodes part of the cluster in JSON"]
+		},
+		"_update": {
+			"definition": ["\tUpdate a document"]
+		},
+		"_doc": {
+			"definition": ["\tGet a document"]
+		},
+		"_update_by_query": {
+			"definition": ["\tUpdate by query"]
+		},
+		"_delete_by_query": {
+			"definition": ["\tDelete by query"]
+		},
+		"_bulk": {
+			"definition": [
+				"\tAllows CRUD operations in bulk",
+				"The HTTP Content-Type header should be set as follows:\n",
+				"Content-Type: application/x-ndjson",
+				"application/json is accepted, but that's not the correct way.",
+				"We have just been using the Console tool so far, so we havent had to worry about HTTP headers at all as Kibana handles all that",
+				"Its common to invoke the bulk API it from some sort of script like node.js or the terminal",
+				"also, each of the lines must end with an enter which include that last line. This is handled automatically by the Console tool"
+			]
+		},
+		"_analyze": {
+			"definition": []
+		},
+		"_mapping": {
+			"definition": [
+				"Elasticsearch field mappings cannot be updated once created we can add new field mappings tho",
+				"A few mapping parameters can be updated for existing mappings",
+				"Field mappings also cannot be removed, just leave out the field when indexing doucments",
+				"solution is to reindex doucments into a new index"
+			]
+		}
+	},
+	"commands": {
+		"nodes": {
+			"definition": ["\tList all the nodes part of the cluster"]
+		},
+		"indices": {
+			"definition": ["\tList all the indices part of the cluster"]
+		},
+		"shards": {
+			"definition": ["\tList all the shards in the cluster"]
+		}
+	},
+	"queryParams": {
+		"v": {
+			"definition": [
+				"\tinstructs elasticsearch to include a descriptive header within the output so that we can,",
+				"identify each piece of information"
+			]
+		}
+	},
+	"mappingParams": {
+		"format": {
+			"uses": [
+				"Used to customize the format for date fields",
+				"strict_date_optional_time",
+				"epoch_millis",
+				"dd/MM/yyyy",
+				"epoch_second"
+			],
+			"example": {
+				"A": {
+					"mappings": {
+						"properties": {
+							"purchased_at": {
+								"type": "date",
+								"format": "dd/MM/yyyy"
+							}
+						}
+					}
+				},
+				"B": {
+					"mappings": {
+						"properties": {
+							"purchased_at": {
+								"type": "date",
+								"format": "epoch_second"
+							}
+						}
+					}
+				}
+			}
+		},
+		"properties": {
+			"uses": ["Defines nested fields for object and nested fields"],
+			"example": {
+				"A": {
+					"mappings": {
+						"properties": {
+							"sold_by": {
+								"properties": {
+									"name": { "type": "text" }
+								}
+							}
+						}
+					}
+				},
+				"B": {
+					"mappings": {
+						"properties": {
+							"products": {
+								"type": "nested",
+								"properties": {
+									"name": { "type": "text" }
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"coerce": {
+			"uses": [
+				"Used to enable or disable coercion of values (enabled by default)"
+			],
+			"example": {
+				"A": {
+					"mappings": {
+						"properties": {
+							"amount": {
+								"type": "float",
+								"coerce": false
+							}
+						}
+					}
+				},
+				"B": {
+					"settings": {
+						"index.mapping.coerce": false
+					},
+					"mappings": {
+						"properties": {
+							"amount": {
+								"type": "float",
+								"coerce": true
+							}
+						}
+					}
+				}
+			}
+		},
+		"doc_values": {
+			"uses": [
+				"Elasticsearch makes use of several data structures",
+				"no single data structure serves all purposes",
+				"Inverted indices are excellent for searching text but",
+				"They don't perform well for many other access patterns",
+				"Optimized for a different data access pattern (docuemnt -> terms)",
+				"Essentially an uninverted index, used for sorting, aggregations and scripting",
+				"It is an additional datastructure not a replacement",
+				"disabling it increases speed",
+				"Only disable doc values if you wont use aggregations, sorting or scripting",
+				"Cannot change this without reindexing your data"
+			],
+			"example": {
+				"mappings": {
+					"properties": {
+						"buyer_email": {
+							"type": "keyword",
+							"doc_values": false
+						}
+					}
+				}
+			}
+		},
+		"norms": {
+			"uses": [
+				"Normalization factors used for relevance scoring, nice for ranking searches based on how well they match a given query",
+				"can be disbaled to save disk space"
+			],
+			"example": {
+				"mappings": {
+					"properties": {
+						"tags": {
+							"type": "text",
+							"norms": false
+						}
+					}
+				}
+			}
+		},
+		"index": {
+			"uses": []
+		},
+		"null_value": {
+			"uses": []
+		},
+		"copy_to": {
+			"uses": []
+		}
+	},
+	"relatedGoals": {
+		"TXxm7xKuNzXPihNA": "Health",
+		"9OCyyjUjBv00tGkG": "CRUD",
+		"GGhDJujMc1aw8zKk": "Analysis",
+		"s3Lh0CxmUXOQ6rfZ": "Field Mappings",
+		"QCTh6vRMtUegSY3j": "Reindexing"
+	},
+	"usages": {
+		"GET": {
+			"_doc": [
+				{
+					"goal": "How to retrieve a document",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "GET",
+						"path": {
+							"index": "products",
+							"api": "_doc",
+							"_id": "100",
+							"body": {
+								"name": "Coffee Maker",
+								"price": 64,
+								"in_stock": 10
+							}
+						},
+						"complete": "GET /products/_doc/100"
+					},
+					"before": null,
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 1,
+						"_seq_no": 0,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Coffee Maker",
+							"price": 64,
+							"in_stock": 10
+						}
+					}
+				}
+			],
+			"_cluster": [
+				{
+					"goal": "Retrive information about the cluster's health",
+					"related": "TXxm7xKuNzXPihNA",
+					"query": {
+						"verb": "GET",
+						"path": {
+							"api": "_cluster",
+							"command": "health"
+						},
+						"complete": "GET /_cluster/health"
+					},
+					"result": {
+						"cluster_name": "elasticsearch",
+						"status": "green",
+						"timed_out": false,
+						"number_of_nodes": 1,
+						"number_of_data_nodes": 1,
+						"active_primary_shards": 7,
+						"active_shards": 7,
+						"relocating_shards": 0,
+						"initializing_shards": 0,
+						"unassigned_shards": 0,
+						"delayed_unassigned_shards": 0,
+						"number_of_pending_tasks": 0,
+						"number_of_in_flight_fetch": 0,
+						"task_max_waiting_in_queue_millis": 0,
+						"active_shards_percent_as_number": 100.0
+					}
+				},
+				{
+					"goal": "Using elastic search using cURL",
+					"related": "TXxm7xKuNzXPihNA",
+					"query": {
+						"verb": "GET",
+						"path": {
+							"path": "http://localhost:9200",
+							"api": "_cluster",
+							"command": "health"
+						},
+						"complete": "cURL -XGET \"http://localhost:9200/_cluster/health\""
+					},
+					"result": {
+						"cluster_name": "elasticsearch",
+						"status": "green",
+						"timed_out": false,
+						"number_of_nodes": 1,
+						"number_of_data_nodes": 1,
+						"active_primary_shards": 7,
+						"active_shards": 7,
+						"relocating_shards": 0,
+						"initializing_shards": 0,
+						"unassigned_shards": 0,
+						"delayed_unassigned_shards": 0,
+						"number_of_pending_tasks": 0,
+						"number_of_in_flight_fetch": 0,
+						"task_max_waiting_in_queue_millis": 0,
+						"active_shards_percent_as_number": 100.0
+					},
+
+					"explain": [
+						"\tKibana is a web interface for elasticsearch. Kibana uses the REST API under the hood.",
+						"It persists data into Elasticsearch indices. This means that if you set up a fresh instance of",
+						"kibana and point it to an existing elasticsearch cluster, all of the existing Kibana data will be loaded",
+						"The leading dot is used to hide indices within the kibana interface"
+					]
+				}
+			],
+			"_cat": [
+				{
+					"goal": "List all the nodes part of the cluster",
+					"related": "TXxm7xKuNzXPihNA",
+					"query": {
+						"verb": "GET",
+						"path": {
+							"api": "_cat",
+							"command": "nodes",
+							"params": "v"
+						},
+						"complete": "GET /_cat/nodes?v"
+					},
+					"result": [
+						"ip        heap.percent ram.percent cpu load_1m load_5m load_15m node.role  master name",
+						"127.0.0.1           24         100   7    2.06                  cdhilmrstw *      Mutebards-MacBook-Pro.local"
+					]
+				},
+				{
+					"goal": "Check out which indicies we have within our cluster",
+					"related": "TXxm7xKuNzXPihNA",
+					"query": {
+						"verb": "GET",
+						"path": {
+							"api": "_cat",
+							"command": "indices",
+							"params": "v"
+						},
+						"complete": "GET /_cat/indices?v"
+					},
+					"result": [
+						"health status index                           uuid                   pri rep docs.count docs.deleted store.size pri.store.size",
+						"green  open   .apm-custom-link                S5tZ0AgvQLqi9V_BUv71CA   1   0          0            0       208b           208b",
+						"green  open   .kibana_task_manager_1          0mkeX0gdRlaK2jOUeUz3Kg   1   0          5         1743    281.7kb        281.7kb",
+						"green  open   .apm-agent-configuration        9lwhHjQIReqIzitSzGlVVA   1   0          0            0       208b           208b",
+						"green  open   kibana_sample_data_logs         4jVK_qcVSbyzKmLKqieIkg   1   0      14074            0     10.5mb         10.5mb",
+						"green  open   .kibana-event-log-7.10.0-000001 dfWitt15TVyQdW-xiuhWbA   1   0          1            0      5.6kb          5.6kb",
+						"green  open   .kibana_1                       61a23bJNTYudwOb2RCOhBw   1   0         80            4     10.4mb         10.4mb"
+					],
+
+					"explain": [
+						"\tKibana is a web interface for elasticsearch. Kibana uses the REST API under the hood.",
+						"It persists data into Elasticsearch indices. This means that if you set up a fresh instance of",
+						"kibana and point it to an existing elasticsearch cluster, all of the existing Kibana data will be loaded",
+						"The leading dot is used to hide indices within the kibana interface"
+					]
+				},
+				{
+					"goal": "How to check the status of our shards",
+					"related": "TXxm7xKuNzXPihNA",
+					"query": {
+						"verb": "GET",
+						"path": {
+							"api": "_cat",
+							"command": "shards",
+							"params": "v"
+						},
+						"complete": "GET /_cat/shards?v"
+					},
+					"result": [
+						"index                           shard prirep state       docs   store ip        node",
+						"ilm-history-3-000001            0     p      STARTED                  127.0.0.1 Mutebards-MacBook-Pro.local",
+						".apm-custom-link                0     p      STARTED        0    208b 127.0.0.1 Mutebards-MacBook-Pro.local",
+						".apm-agent-configuration        0     p      STARTED        0    208b 127.0.0.1 Mutebards-MacBook-Pro.local",
+						"pages                           0     p      STARTED        0    208b 127.0.0.1 Mutebards-MacBook-Pro.local",
+						"pages                           0     r      UNASSIGNED",
+						"kibana_sample_data_logs         0     p      STARTED    14074  10.5mb 127.0.0.1 Mutebards-MacBook-Pro.local",
+						".kibana_task_manager_1          0     p      STARTED        5 350.9kb 127.0.0.1 Mutebards-MacBook-Pro.local",
+						".kibana-event-log-7.10.0-000001 0     p      STARTED        2    11kb 127.0.0.1 Mutebards-MacBook-Pro.local",
+						".kibana_1                       0     p      STARTED       84  10.5mb 127.0.0.1 Mutebards-MacBook-Pro.local"
+					]
+				}
+			],
+			"_search": [
+				{
+					"goal": "How to search all of our documents",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "GET",
+						"path": {
+							"index": "products",
+							"api": "_search",
+							"body": {
+								"query": {
+									"match_all": {}
+								}
+							}
+						},
+						"complete": "POST /_bulk {\"query\": {\"match_all\": {}}}"
+					},
+					"after": {
+						"took": 957,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 4,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "100",
+									"_score": 1.0,
+									"_source": {
+										"price": 79,
+										"name": "Toaster",
+										"in_stock": 122
+									}
+								},
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "200",
+									"_score": 1.0,
+									"_source": {
+										"name": "Espresso Machine",
+										"price": 199,
+										"in_stock": 5
+									}
+								},
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "201",
+									"_score": 1.0,
+									"_source": {
+										"name": "Milk Frother",
+										"price": 149,
+										"in_stock": 14
+									}
+								},
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "101",
+									"_score": 1.0,
+									"_source": {
+										"price": 64,
+										"name": "Coffee Maker",
+										"in_stock": 2,
+										"tags": ["electronics"]
+									}
+								}
+							]
+						}
+					}
+				}
+			],
+			"_mapping": [
+				{
+					"goal": "How to get all our mapping structure",
+					"related": "s3Lh0CxmUXOQ6rfZ",
+					"query": {
+						"verb": "GET",
+						"path": {
+							"index": "reviews",
+							"api": "_mapping"
+						},
+						"complete": "GET /reviews/_mapping"
+					},
+					"result": {
+						"reviews": {
+							"mappings": {
+								"properties": {
+									"author": {
+										"properties": {
+											"email": {
+												"type": "keyword"
+											},
+											"first_name": {
+												"type": "text"
+											},
+											"last_name": {
+												"type": "text"
+											}
+										}
+									},
+									"content": {
+										"type": "text"
+									},
+									"mappings": {
+										"properties": {
+											"author": {
+												"properties": {
+													"email": {
+														"type": "text",
+														"fields": {
+															"keyword": {
+																"type": "keyword",
+																"ignore_above": 256
+															}
+														}
+													},
+													"first_name": {
+														"type": "text",
+														"fields": {
+															"keyword": {
+																"type": "keyword",
+																"ignore_above": 256
+															}
+														}
+													},
+													"last_name": {
+														"type": "text",
+														"fields": {
+															"keyword": {
+																"type": "keyword",
+																"ignore_above": 256
+															}
+														}
+													}
+												}
+											},
+											"content": {
+												"type": "text",
+												"fields": {
+													"keyword": {
+														"type": "keyword",
+														"ignore_above": 256
+													}
+												}
+											},
+											"product_id": {
+												"type": "long"
+											},
+											"rating": {
+												"type": "float"
+											}
+										}
+									},
+									"product_id": {
+										"type": "integer"
+									},
+									"rating": {
+										"type": "float"
+									}
+								}
+							}
+						}
+					}
+				},
+				{
+					"goal": "How to the mapping for a specific field",
+					"related": "s3Lh0CxmUXOQ6rfZ",
+					"query": {
+						"verb": "GET",
+						"path": {
+							"index": "reviews",
+							"api": "_mapping",
+							"field": "content"
+						},
+						"complete": "GET /reviews/_mapping/field/content"
+					},
+					"before": {
+						"took": 600,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 1,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "reviews",
+									"_type": "_doc",
+									"_id": "1",
+									"_score": 1.0,
+									"_source": {
+										"mappings": {
+											"rating": 5.0,
+											"content": "Outstanding course!",
+											"product_id": 123,
+											"author": {
+												"first_name": "Carl",
+												"last_name": "Severe",
+												"email": "csevere@gmail.com"
+											}
+										}
+									}
+								}
+							]
+						}
+					},
+					"result": {
+						"reviews": {
+							"mappings": {
+								"content": {
+									"full_name": "content",
+									"mapping": {
+										"content": {
+											"type": "text"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				{
+					"goal": "How to the mapping for a specific nested field",
+					"related": "s3Lh0CxmUXOQ6rfZ",
+					"query": {
+						"verb": "GET",
+						"path": {
+							"index": "reviews",
+							"api": "_mapping",
+							"field": "author.email"
+						},
+						"complete": "GET /reviews/_mapping/field/author.email"
+					},
+					"before": {
+						"took": 600,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 1,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "reviews",
+									"_type": "_doc",
+									"_id": "1",
+									"_score": 1.0,
+									"_source": {
+										"mappings": {
+											"rating": 5.0,
+											"content": "Outstanding course!",
+											"product_id": 123,
+											"author": {
+												"first_name": "Carl",
+												"last_name": "Severe",
+												"email": "csevere@gmail.com"
+											}
+										}
+									}
+								}
+							]
+						}
+					},
+					"result": {
+						"reviews": {
+							"mappings": {
+								"author.email": {
+									"full_name": "author.email",
+									"mapping": {
+										"email": {
+											"type": "keyword"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			]
+		},
+		"POST": {
+			"_doc": [
+				{
+					"goal": "How to index documents",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"index": "products",
+							"api": "_doc",
+							"body": {
+								"name": "Coffee Maker",
+								"price": 64,
+								"in_stock": 10
+							}
+						},
+						"complete": "POST /products/_doc {\"name\": \"Coffee Maker\",\"price\": 64,\"in_stock\": 10}"
+					},
+					"before": null,
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "3Jkf3nUBlHI0x7lhp7gO",
+						"_version": 1,
+						"state": "created",
+						"_shards": {
+							"total": 2,
+							"successful": 1,
+							"failed": 0
+						},
+						"_seq_no": 0,
+						"_primary_term": 1
+					}
+				}
+			],
+			"_update": [
+				{
+					"goal": "How to update a document",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"index": "products",
+							"api": "_update",
+							"_id": "100",
+							"body": {
+								"doc": {
+									"in_stock": 3
+								}
+							}
+						},
+						"complete": "POST /products/_update/100 {\"doc\" : {\"in_stock\": 3}}"
+					},
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 8,
+						"_seq_no": 7,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Coffee Maker",
+							"price": 64,
+							"in_stock": 3
+						}
+					}
+				},
+				{
+					"goal": "How to add an array of tags",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"index": "products",
+							"api": "_update",
+							"_id": "100",
+							"body": {
+								"doc": {
+									"tags": ["electronics"]
+								}
+							}
+						},
+						"complete": "POST /products/_update/100 {\"doc\" : \"tags\": [\"electronics\"]}"
+					},
+					"before": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 8,
+						"_seq_no": 7,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Coffee Maker",
+							"price": 64,
+							"in_stock": 3
+						}
+					},
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 8,
+						"_seq_no": 7,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Coffee Maker",
+							"price": 64,
+							"in_stock": 3,
+							"tags": ["electronics"]
+						}
+					}
+				},
+				{
+					"goal": "How to utilize scripting, and decrement",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"index": "products",
+							"api": "_update",
+							"_id": "100",
+							"body": {
+								"script": {
+									"source": "ctx._source.in_stock--"
+								}
+							}
+						},
+						"complete": "POST /products/_update/100 {\"script\": {\"source\": \"ctx._source.in_stock--\"}}"
+					},
+					"before": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 8,
+						"_seq_no": 7,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Coffee Maker",
+							"price": 64,
+							"in_stock": 3,
+							"tags": ["electronics"]
+						}
+					},
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 9,
+						"_seq_no": 8,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Coffee Maker",
+							"price": 64,
+							"in_stock": 2,
+							"tags": ["electronics"]
+						}
+					},
+					"explain": [
+						"\tctx is a variable and it is short for context. We can access the source document through its _source property",
+						"Which gives us an object containg the document's fields",
+						"In this case we accessed the 'in_stock' field and decremented it with '--'",
+						"If you have complicated scripts, you can use three double quotes instead of one per side"
+					]
+				},
+				{
+					"goal": "How to utilize scripting, and assignment",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"index": "products",
+							"api": "_update",
+							"_id": "100",
+							"body": {
+								"script": {
+									"source": "ctx._source.in_stock = 10"
+								}
+							}
+						},
+						"complete": "POST /products/_update/100 {\"script\": {\"source\": \"ctx._source.in_stock = 10\"}}"
+					},
+					"before": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 9,
+						"_seq_no": 8,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Coffee Maker",
+							"price": 64,
+							"in_stock": 2,
+							"tags": ["electronics"]
+						}
+					},
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 7,
+						"_seq_no": 6,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Coffee Maker",
+							"price": 64,
+							"in_stock": 10,
+							"tags": ["electronics"]
+						}
+					}
+				},
+				{
+					"goal": "How to use parameters",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"index": "products",
+							"api": "_update",
+							"_id": "100",
+							"body": {
+								"script": {
+									"source": "ctx._source.in_stock -= params.quantity",
+									"params": {
+										"quantity": 4
+									}
+								}
+							}
+						},
+						"complete": "POST /products/_update/100 {\"script\": {\"source\": \"ctx._source.in_stock -= params.quantity\"}}"
+					},
+					"before": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 7,
+						"_seq_no": 6,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Coffee Maker",
+							"price": 64,
+							"in_stock": 10,
+							"tags": ["electronics"]
+						}
+					},
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 6,
+						"_seq_no": 5,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Coffee Maker",
+							"price": 64,
+							"in_stock": 6,
+							"tags": ["electronics"]
+						}
+					},
+					"explain": [
+						"Params is an object consisting of key value pairs where each pair corresponds to a parameter name and value when creating a script"
+					]
+				},
+				{
+					"goal": "How to use upsert",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"index": "products",
+							"api": "_update",
+							"_id": "101",
+							"body": {
+								"script": {
+									"source": "ctx._source.in_stock++"
+								},
+								"upsert": {
+									"name": "Blender",
+									"price": 399,
+									"in_stock": 5
+								}
+							}
+						},
+						"complete": "POST /products/_update/101 {\"script\": {\"source\": \"ctx._source.in_stock==\"},\"upsert\": {\"name\": \"Blender\",\"price\": 399,\"in_stock\": 5}}"
+					},
+					"before": null,
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "101",
+						"_version": 1,
+						"_seq_no": 11,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Blender",
+							"price": 399,
+							"in_stock": 5
+						}
+					},
+					"explain": [
+						"Since no document with the id of 101 already existed, the contents of the upsert option should have been indexed as a new document"
+					]
+				},
+				{
+					"goal": "How to use primary_term and seq_no to facilitate optimistic-concurrency-control",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"index": "products",
+							"api": "_update",
+							"_id": "100",
+							"occ": "if_primary_term=1&if_seq_no=12",
+							"body": {
+								"doc": {
+									"in_stock": 123
+								}
+							}
+						},
+						"complete": "POST /products/_update/100?if_primary_term=1&if_seq_no=12 {\"doc\": {\"in_stock\" : 123}}"
+					},
+					"before": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 2,
+						"_seq_no": 12,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Toaster",
+							"price": 79,
+							"in_stock": 4
+						}
+					},
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 3,
+						"_seq_no": 16,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Toaster",
+							"price": 79,
+							"in_stock": 123
+						}
+					},
+					"explain": [
+						"The document will only be updated if the document's primary term and sequence number match the supplied values"
+					]
+				}
+			],
+			"_update_by_query": [
+				{
+					"scenario": "Suppose that someone has purchased multiple products and we need to reduce the in_stock value by one for each of the products",
+					"related": "9OCyyjUjBv00tGkG",
+					"goal": "How to update by query",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"index": "products",
+							"api": "_update_by_query",
+							"body": {
+								"script": {
+									"source": "ctx._source.in_stock--"
+								},
+								"query": {
+									"match_all": {}
+								}
+							}
+						},
+						"complete": "POST /products/_update_by_query {\"script\": {\"source\" : \"ctx._source.in_stock--\"},\"query\" : {\"match_all\" : {}}}"
+					},
+					"before": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 3,
+						"_seq_no": 16,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Toaster",
+							"price": 79,
+							"in_stock": 123
+						}
+					},
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 4,
+						"_seq_no": 18,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"price": 79,
+							"name": "Toaster",
+							"in_stock": 122
+						}
+					},
+					"explain": [
+						"\tWe need to supply a script to do our desired action",
+						"Next we then want to update our documents bu applying a constraint, we do this by supplying a seach query"
+					]
+				}
+			],
+			"_bulk": [
+				{
+					"goal": "How to do bulk insert",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"api": "_bulk",
+							"body1": {
+								"index": {
+									"_index": "products",
+									"_id": 200
+								}
+							},
+							"body2": {
+								"name": "Espresso Machine",
+								"price": 199,
+								"in_stock": 5
+							},
+							"body3": {
+								"create": {
+									"_index": "products",
+									"_id": 201
+								}
+							},
+							"body4": {
+								"name": "Milk Frother",
+								"price": 149,
+								"in_stock": 14
+							}
+						},
+						"complete": "POST /_bulk {\"index\": {\"_index\" : \"products\",\"_id\" : 200}}{\"name\" : \"Espresso Machine\",\"price\" : 199,\"in_stock\" : 5}{\"create\": {\"_index\" : \"products\",\"_id\" : 201}}{\"name\" : \"Milk Frother\",\"price\" : 149,\"in_stock\" : 14}"
+					},
+					"effect": {
+						"took": 26,
+						"errors": false,
+						"items": [
+							{
+								"index": {
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "200",
+									"_version": 1,
+									"result": "created",
+									"_shards": {
+										"total": 2,
+										"successful": 1,
+										"failed": 0
+									},
+									"_seq_no": 19,
+									"_primary_term": 1,
+									"status": 201
+								}
+							},
+							{
+								"create": {
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "201",
+									"_version": 1,
+									"result": "created",
+									"_shards": {
+										"total": 2,
+										"successful": 1,
+										"failed": 0
+									},
+									"_seq_no": 20,
+									"_primary_term": 1,
+									"status": 201
+								}
+							}
+						]
+					},
+					"prev": [
+						{
+							"_index": "products",
+							"_type": "_doc",
+							"_id": "100",
+							"_score": 1.0,
+							"_source": {
+								"price": 79,
+								"name": "Toaster",
+								"in_stock": 122
+							}
+						},
+						{
+							"_index": "products",
+							"_type": "_doc",
+							"_id": "101",
+							"_score": 1.0,
+							"_source": {
+								"price": 64,
+								"name": "Coffee Maker",
+								"in_stock": 2,
+								"tags": ["electronics"]
+							}
+						}
+					],
+					"after": [
+						{
+							"_index": "products",
+							"_type": "_doc",
+							"_id": "100",
+							"_score": 1.0,
+							"_source": {
+								"price": 79,
+								"name": "Toaster",
+								"in_stock": 122
+							}
+						},
+						{
+							"_index": "products",
+							"_type": "_doc",
+							"_id": "101",
+							"_score": 1.0,
+							"_source": {
+								"price": 64,
+								"name": "Coffee Maker",
+								"in_stock": 2,
+								"tags": ["electronics"]
+							}
+						},
+						{
+							"_index": "products",
+							"_type": "_doc",
+							"_id": "200",
+							"_version": 1,
+							"_seq_no": 19,
+							"_primary_term": 1,
+							"found": true,
+							"_source": {
+								"name": "Espresso Machine",
+								"price": 199,
+								"in_stock": 5
+							}
+						},
+						{
+							"_index": "products",
+							"_type": "_doc",
+							"_id": "201",
+							"_version": 1,
+							"_seq_no": 20,
+							"_primary_term": 1,
+							"found": true,
+							"_source": {
+								"name": "Milk Frother",
+								"price": 149,
+								"in_stock": 14
+							}
+						}
+					]
+				},
+				{
+					"goal": "How to do bulk update",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"index": "products",
+							"api": "_bulk",
+							"body1": {
+								"update": {
+									"_id": 200
+								}
+							},
+							"body2": {
+								"doc": {
+									"price": 129
+								}
+							},
+							"body3": {
+								"delete": {
+									"_id": 201
+								}
+							}
+						},
+						"complete": "POST /products/_bulk {\"update\": {\"_id\": 200}}{\"doc\": {\"price\": 129}}{\"delete\": {\"_id\": 201}}"
+					},
+
+					"effect": {
+						"took": 22,
+						"errors": false,
+						"items": [
+							{
+								"update": {
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "200",
+									"_version": 7,
+									"result": "updated",
+									"_shards": {
+										"total": 2,
+										"successful": 1,
+										"failed": 0
+									},
+									"_seq_no": 37,
+									"_primary_term": 1,
+									"status": 200
+								}
+							},
+							{
+								"delete": {
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "201",
+									"_version": 3,
+									"result": "deleted",
+									"_shards": {
+										"total": 2,
+										"successful": 1,
+										"failed": 0
+									},
+									"_seq_no": 38,
+									"_primary_term": 1,
+									"status": 200
+								}
+							}
+						]
+					},
+					"before": {
+						"took": 957,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 4,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "100",
+									"_score": 1.0,
+									"_source": {
+										"price": 79,
+										"name": "Toaster",
+										"in_stock": 122
+									}
+								},
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "200",
+									"_score": 1.0,
+									"_source": {
+										"name": "Espresso Machine",
+										"price": 199,
+										"in_stock": 5
+									}
+								},
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "201",
+									"_score": 1.0,
+									"_source": {
+										"name": "Milk Frother",
+										"price": 149,
+										"in_stock": 14
+									}
+								},
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "101",
+									"_score": 1.0,
+									"_source": {
+										"price": 64,
+										"name": "Coffee Maker",
+										"in_stock": 2,
+										"tags": ["electronics"]
+									}
+								}
+							]
+						}
+					},
+					"after": {
+						"took": 0,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 3,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "100",
+									"_score": 1.0,
+									"_source": {
+										"price": 79,
+										"name": "Toaster",
+										"in_stock": 122
+									}
+								},
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "101",
+									"_score": 1.0,
+									"_source": {
+										"price": 64,
+										"name": "Coffee Maker",
+										"in_stock": 2,
+										"tags": ["electronics"]
+									}
+								},
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "200",
+									"_score": 1.0,
+									"_source": {
+										"name": "Espresso Machine",
+										"price": 129,
+										"in_stock": 5
+									}
+								}
+							]
+						}
+					},
+					"explain": [
+						"\t So far, we have been using the _bulk endpoint without specifying the index name, because we did this with each action",
+						"That is useful for situations where there may be actions for different indices. If all actions are for the same index, however, we can specify",
+						"the index name within the request path instead"
+					]
+				}
+			],
+			"_analyze": [
+				{
+					"goal": "How to analyze the text within our documents",
+					"related": "GGhDJujMc1aw8zKk",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"api": "_analyze",
+							"body": {
+								"text": "2 guys walk into  a bar, but the third... DUCKS :-)",
+								"analyzer": "standard"
+							}
+						},
+						"complete": "POST /_analyze {\"text\" : \"2 guys walk into  a bar, but the third... DUCKS :-)\",\"analyzer\": \"standard\"}"
+					},
+					"before": null,
+					"after": {
+						"tokens": [
+							{
+								"token": "2",
+								"start_offset": 0,
+								"end_offset": 1,
+								"type": "<NUM>",
+								"position": 0
+							},
+							{
+								"token": "guys",
+								"start_offset": 2,
+								"end_offset": 6,
+								"type": "<ALPHANUM>",
+								"position": 1
+							},
+							{
+								"token": "walk",
+								"start_offset": 7,
+								"end_offset": 11,
+								"type": "<ALPHANUM>",
+								"position": 2
+							},
+							{
+								"token": "into",
+								"start_offset": 12,
+								"end_offset": 16,
+								"type": "<ALPHANUM>",
+								"position": 3
+							},
+							{
+								"token": "a",
+								"start_offset": 18,
+								"end_offset": 19,
+								"type": "<ALPHANUM>",
+								"position": 4
+							},
+							{
+								"token": "bar",
+								"start_offset": 20,
+								"end_offset": 23,
+								"type": "<ALPHANUM>",
+								"position": 5
+							},
+							{
+								"token": "but",
+								"start_offset": 25,
+								"end_offset": 28,
+								"type": "<ALPHANUM>",
+								"position": 6
+							},
+							{
+								"token": "the",
+								"start_offset": 29,
+								"end_offset": 32,
+								"type": "<ALPHANUM>",
+								"position": 7
+							},
+							{
+								"token": "third",
+								"start_offset": 33,
+								"end_offset": 38,
+								"type": "<ALPHANUM>",
+								"position": 8
+							},
+							{
+								"token": "ducks",
+								"start_offset": 42,
+								"end_offset": 47,
+								"type": "<ALPHANUM>",
+								"position": 9
+							}
+						]
+					}
+				},
+				{
+					"goal": "How to analyze the text while specifying the parts making up an analyzer",
+					"related": "GGhDJujMc1aw8zKk",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"api": "_analyze",
+							"body": {
+								"text": "2 guys walk into  a bar, but the third... DUCKS :-)",
+								"char_filter": [],
+								"tokenizer": "standard",
+								"filter": ["lowercase"]
+							}
+						},
+						"complete": "POST /_analyze {\"text\": \"2 guys walk into  a bar, but the third... DUCKS :-)\",\"char_filter\" : [],\"tokenizer\" : \"standard\",\"filter\" : [\"lowercase\"]}"
+					},
+					"before": null,
+					"after": {
+						"tokens": [
+							{
+								"token": "2",
+								"start_offset": 0,
+								"end_offset": 1,
+								"type": "<NUM>",
+								"position": 0
+							},
+							{
+								"token": "guys",
+								"start_offset": 2,
+								"end_offset": 6,
+								"type": "<ALPHANUM>",
+								"position": 1
+							},
+							{
+								"token": "walk",
+								"start_offset": 7,
+								"end_offset": 11,
+								"type": "<ALPHANUM>",
+								"position": 2
+							},
+							{
+								"token": "into",
+								"start_offset": 12,
+								"end_offset": 16,
+								"type": "<ALPHANUM>",
+								"position": 3
+							},
+							{
+								"token": "a",
+								"start_offset": 18,
+								"end_offset": 19,
+								"type": "<ALPHANUM>",
+								"position": 4
+							},
+							{
+								"token": "bar",
+								"start_offset": 20,
+								"end_offset": 23,
+								"type": "<ALPHANUM>",
+								"position": 5
+							},
+							{
+								"token": "but",
+								"start_offset": 25,
+								"end_offset": 28,
+								"type": "<ALPHANUM>",
+								"position": 6
+							},
+							{
+								"token": "the",
+								"start_offset": 29,
+								"end_offset": 32,
+								"type": "<ALPHANUM>",
+								"position": 7
+							},
+							{
+								"token": "third",
+								"start_offset": 33,
+								"end_offset": 38,
+								"type": "<ALPHANUM>",
+								"position": 8
+							},
+							{
+								"token": "ducks",
+								"start_offset": 42,
+								"end_offset": 47,
+								"type": "<ALPHANUM>",
+								"position": 9
+							}
+						]
+					}
+				},
+				{
+					"goal": "How to analyze using keyword datatype",
+					"related": "GGhDJujMc1aw8zKk",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"api": "_analyze",
+							"body": {
+								"text": "2 guys walk into  a bar, but the third... DUCKS :-)",
+								"analyzer": "keyword"
+							}
+						},
+						"complete": "POST /_analyze {\"text\" : \"2 guys walk into  a bar, but the third... DUCKS :-)\",\"analyzer\": \"keyword\"}"
+					},
+					"before": null,
+					"after": {
+						"tokens": [
+							{
+								"token": "2 guys walk into  a bar, but the third... DUCKS :-)",
+								"start_offset": 0,
+								"end_offset": 51,
+								"type": "word",
+								"position": 0
+							}
+						]
+					}
+				},
+				{
+					"goal": "How to analyze arrays",
+					"related": "GGhDJujMc1aw8zKk",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"api": "_analyze",
+							"body": {
+								"text": ["Strings are simply", "merged together"]
+							}
+						},
+						"complete": "POST /_analyze {\"text\": [\"Strings are simply\", \"merged together\"]}"
+					},
+					"after": {
+						"tokens": [
+							{
+								"token": "strings",
+								"start_offset": 0,
+								"end_offset": 7,
+								"type": "<ALPHANUM>",
+								"position": 0
+							},
+							{
+								"token": "are",
+								"start_offset": 8,
+								"end_offset": 11,
+								"type": "<ALPHANUM>",
+								"position": 1
+							},
+							{
+								"token": "simply",
+								"start_offset": 12,
+								"end_offset": 18,
+								"type": "<ALPHANUM>",
+								"position": 2
+							},
+							{
+								"token": "merged",
+								"start_offset": 19,
+								"end_offset": 25,
+								"type": "<ALPHANUM>",
+								"position": 3
+							},
+							{
+								"token": "together",
+								"start_offset": 26,
+								"end_offset": 34,
+								"type": "<ALPHANUM>",
+								"position": 4
+							}
+						]
+					}
+				}
+			],
+			"_reindex": [
+				{
+					"goal": "2) How to reindex documents",
+					"related": "QCTh6vRMtUegSY3j",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"api": "_reindex",
+							"body": {
+								"source": {
+									"index": "reviews"
+								},
+								"dest": {
+									"index": "reviews_new"
+								}
+							}
+						},
+						"complete": "POST /_reindex {\"source\":{\"index\":\"reviews\"},\"dest\":{\"index\":\"reviews_new\"}}"
+					},
+					"result": {
+						"took": 70,
+						"timed_out": false,
+						"total": 5,
+						"updated": 0,
+						"created": 5,
+						"deleted": 0,
+						"batches": 1,
+						"version_conflicts": 0,
+						"noops": 0,
+						"retries": {
+							"bulk": 0,
+							"search": 0
+						},
+						"throttled_millis": 0,
+						"requests_per_second": -1.0,
+						"throttled_until_millis": 0,
+						"failures": []
+					},
+					"before": {
+						"took": 6,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 0,
+								"relation": "eq"
+							},
+							"max_score": null,
+							"hits": []
+						}
+					},
+					"after": {
+						"took": 757,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 5,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "2",
+									"_score": 1.0,
+									"_source": {
+										"rating": 4.5,
+										"content": "Not bad",
+										"product_id": 123,
+										"created_at": "2015-03-27",
+										"author": {
+											"first_name": "Average",
+											"last_name": "Joe",
+											"email": "avgj@gmail.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "3",
+									"_score": 1.0,
+									"_source": {
+										"rating": 3.5,
+										"content": "Could be better",
+										"product_id": 123,
+										"created_at": "2015-04-15T13:07:41Z",
+										"author": {
+											"first_name": "Spencer",
+											"last_name": "Pearson",
+											"email": "spearson@example.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "4",
+									"_score": 1.0,
+									"_source": {
+										"rating": 5.0,
+										"content": "Incredible",
+										"product_id": 123,
+										"created_at": "2015-01-28T09:21:51+01:00",
+										"author": {
+											"first_name": "Adam",
+											"last_name": "Jones",
+											"email": "adam.jones@example.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "5",
+									"_score": 1.0,
+									"_source": {
+										"rating": 4.5,
+										"content": "Very useful",
+										"product_id": 123,
+										"created_at": "14360112840000",
+										"author": {
+											"first_name": "Taylor",
+											"last_name": "West",
+											"email": "twest@example.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "1",
+									"_score": 1.0,
+									"_source": {
+										"rating": 5.0,
+										"content": "Outstanding course!",
+										"product_id": 123,
+										"author": {
+											"first_name": "Carl",
+											"last_name": "Severe",
+											"email": "csevere@gmail.com"
+										}
+									}
+								}
+							]
+						}
+					}
+				},
+				{
+					"goal": "3) How to reindex documents with a script so that product id becomes a string",
+					"related": "QCTh6vRMtUegSY3j",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"api": "_reindex",
+							"body": {
+								"source": {
+									"index": "reviews"
+								},
+								"dest": {
+									"index": "reviews_new"
+								},
+								"script": {
+									"source": [
+										"\"\"\"",
+										"if (ctx._source.product_id != null){",
+										"ctx._source.product_id = ctx._source.product_id.toString();",
+										"}",
+										"\"\"\""
+									]
+								}
+							}
+						},
+						"warning": "Remove array and quotes on each line and then remove escape chars for triple quotations",
+						"complete": "POST /_reindex (body cannot be represented in valid JSON)"
+					},
+					"result": {
+						"took": 233,
+						"timed_out": false,
+						"total": 5,
+						"updated": 5,
+						"created": 0,
+						"deleted": 0,
+						"batches": 1,
+						"version_conflicts": 0,
+						"noops": 0,
+						"retries": {
+							"bulk": 0,
+							"search": 0
+						},
+						"throttled_millis": 0,
+						"requests_per_second": -1.0,
+						"throttled_until_millis": 0,
+						"failures": []
+					},
+
+					"before": {
+						"took": 757,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 5,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "2",
+									"_score": 1.0,
+									"_source": {
+										"rating": 4.5,
+										"content": "Not bad",
+										"product_id": 123,
+										"created_at": "2015-03-27",
+										"author": {
+											"first_name": "Average",
+											"last_name": "Joe",
+											"email": "avgj@gmail.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "3",
+									"_score": 1.0,
+									"_source": {
+										"rating": 3.5,
+										"content": "Could be better",
+										"product_id": 123,
+										"created_at": "2015-04-15T13:07:41Z",
+										"author": {
+											"first_name": "Spencer",
+											"last_name": "Pearson",
+											"email": "spearson@example.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "4",
+									"_score": 1.0,
+									"_source": {
+										"rating": 5.0,
+										"content": "Incredible",
+										"product_id": 123,
+										"created_at": "2015-01-28T09:21:51+01:00",
+										"author": {
+											"first_name": "Adam",
+											"last_name": "Jones",
+											"email": "adam.jones@example.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "5",
+									"_score": 1.0,
+									"_source": {
+										"rating": 4.5,
+										"content": "Very useful",
+										"product_id": 123,
+										"created_at": "14360112840000",
+										"author": {
+											"first_name": "Taylor",
+											"last_name": "West",
+											"email": "twest@example.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "1",
+									"_score": 1.0,
+									"_source": {
+										"rating": 5.0,
+										"content": "Outstanding course!",
+										"product_id": 123,
+										"author": {
+											"first_name": "Carl",
+											"last_name": "Severe",
+											"email": "csevere@gmail.com"
+										}
+									}
+								}
+							]
+						}
+					},
+					"after": {
+						"took": 100,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 5,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "2",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Joe",
+											"first_name": "Average",
+											"email": "avgj@gmail.com"
+										},
+										"product_id": "123",
+										"rating": 4.5,
+										"created_at": "2015-03-27",
+										"content": "Not bad"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "3",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Pearson",
+											"first_name": "Spencer",
+											"email": "spearson@example.com"
+										},
+										"product_id": "123",
+										"rating": 3.5,
+										"created_at": "2015-04-15T13:07:41Z",
+										"content": "Could be better"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "4",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Jones",
+											"first_name": "Adam",
+											"email": "adam.jones@example.com"
+										},
+										"product_id": "123",
+										"rating": 5.0,
+										"created_at": "2015-01-28T09:21:51+01:00",
+										"content": "Incredible"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "5",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "West",
+											"first_name": "Taylor",
+											"email": "twest@example.com"
+										},
+										"product_id": "123",
+										"rating": 4.5,
+										"created_at": "14360112840000",
+										"content": "Very useful"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "1",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Severe",
+											"first_name": "Carl",
+											"email": "csevere@gmail.com"
+										},
+										"product_id": "123",
+										"rating": 5.0,
+										"content": "Outstanding course!"
+									}
+								}
+							]
+						}
+					}
+				},
+				{
+					"goal": "4) How to reindex documents with a script so that reviews with a rating of at least 4.0 are selected",
+					"related": "QCTh6vRMtUegSY3j",
+					"query": {
+						"verb": "POST",
+						"path": {
+							"api": "_reindex",
+							"body": {
+								"source": {
+									"index": "reviews",
+									"query": {
+										"range": {
+											"rating": {
+												"gte": 4.0
+											}
+										}
+									}
+								},
+								"dest": {
+									"index": "reviews_new"
+								},
+								"script": {
+									"source": [
+										"\"\"\"",
+										"if (ctx._source.product_id != null){",
+										"ctx._source.product_id++;",
+										"}",
+										"\"\"\""
+									]
+								}
+							}
+						},
+						"warning": "Remove array and quotes on each line and then remove escape chars for triple quotations",
+						"complete": "POST /_reindex (body cannot be represented in valid JSON)"
+					},
+					"before": {
+						"took": 100,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 5,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "2",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Joe",
+											"first_name": "Average",
+											"email": "avgj@gmail.com"
+										},
+										"product_id": "123",
+										"rating": 4.5,
+										"created_at": "2015-03-27",
+										"content": "Not bad"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "3",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Pearson",
+											"first_name": "Spencer",
+											"email": "spearson@example.com"
+										},
+										"product_id": "123",
+										"rating": 3.5,
+										"created_at": "2015-04-15T13:07:41Z",
+										"content": "Could be better"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "4",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Jones",
+											"first_name": "Adam",
+											"email": "adam.jones@example.com"
+										},
+										"product_id": "123",
+										"rating": 5.0,
+										"created_at": "2015-01-28T09:21:51+01:00",
+										"content": "Incredible"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "5",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "West",
+											"first_name": "Taylor",
+											"email": "twest@example.com"
+										},
+										"product_id": "123",
+										"rating": 4.5,
+										"created_at": "14360112840000",
+										"content": "Very useful"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "1",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Severe",
+											"first_name": "Carl",
+											"email": "csevere@gmail.com"
+										},
+										"product_id": "123",
+										"rating": 5.0,
+										"content": "Outstanding course!"
+									}
+								}
+							]
+						}
+					},
+					"after": {
+						"took": 401,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 5,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "3",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Pearson",
+											"first_name": "Spencer",
+											"email": "spearson@example.com"
+										},
+										"product_id": "123",
+										"rating": 3.5,
+										"created_at": "2015-04-15T13:07:41Z",
+										"content": "Could be better"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "2",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Joe",
+											"first_name": "Average",
+											"email": "avgj@gmail.com"
+										},
+										"product_id": 124,
+										"rating": 4.5,
+										"created_at": "2015-03-27",
+										"content": "Not bad"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "4",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Jones",
+											"first_name": "Adam",
+											"email": "adam.jones@example.com"
+										},
+										"product_id": 124,
+										"rating": 5.0,
+										"created_at": "2015-01-28T09:21:51+01:00",
+										"content": "Incredible"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "5",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "West",
+											"first_name": "Taylor",
+											"email": "twest@example.com"
+										},
+										"product_id": 124,
+										"rating": 4.5,
+										"created_at": "14360112840000",
+										"content": "Very useful"
+									}
+								},
+								{
+									"_index": "reviews_new",
+									"_type": "_doc",
+									"_id": "1",
+									"_score": 1.0,
+									"_source": {
+										"author": {
+											"last_name": "Severe",
+											"first_name": "Carl",
+											"email": "csevere@gmail.com"
+										},
+										"product_id": 124,
+										"rating": 5.0,
+										"content": "Outstanding course!"
+									}
+								}
+							]
+						}
+					}
+				},
+				{
+					"goal": "How to 'remove' a field / How to use source filtering",
+					"related": "QCTh6vRMtUegSY3j",
+					"explain": [
+						"Field mappings cannot be deleted",
+						"Fields can be left out when indexing document",
+						"Maybe we want to reclaim disk space used up by a field",
+						"By specifying an array of field names in source filtering, only those fields are included for each document",
+						"any fields that you leave out will not be reindexed"
+					],
+					"query": {
+						"verb": "POST",
+						"path": {
+							"api": "_reindex",
+							"body": {
+								"source": {
+									"index": "reviews",
+									"_source": ["content", "created_at", "rating"]
+								},
+								"dest": {
+									"index": "reviews_new"
+								}
+							}
+						},
+						"complete": "POST /_reindex {\"source\":{\"index\":\"reviews\",\"_source\":[\"content\",\"created_at\",\"rating\"]},\"dest\":{\"index\":\"reviews_new\"}}"
+					}
+				},
+				{
+					"goal": "How to change a field's name",
+					"related": "QCTh6vRMtUegSY3j",
+					"explain": [
+						"Field mappings cannot be deleted",
+						"Fields can be left out when indexing document",
+						"Maybe we want to reclaim disk space used up by a field",
+						"By specifying an array of field names in source filtering, only those fields are included for each document",
+						"any fields that you leave out will not be reindexed"
+					],
+					"query": {
+						"verb": "POST",
+						"path": {
+							"api": "_reindex",
+							"body": {
+								"source": {
+									"index": "reviews"
+								},
+								"dest": {
+									"index": "reviews_new"
+								},
+								"script": {
+									"source": [
+										"\"\"\"",
+										"# Rename 'content' field to 'comment'",
+										"ctx._source.comment = ctx._source.remove(\"content\");",
+										"}",
+										"\"\"\""
+									]
+								}
+							}
+						},
+						"complete": "POST /_reindex {\"source\":{\"index\":\"reviews\",\"_source\":[\"content\",\"created_at\",\"rating\"]},\"dest\":{\"index\":\"reviews_new\"}}"
+					}
+				}
+			]
+		},
+		"PUT": {
+			"default": [
+				{
+					"goal": "How to create a new index",
+					"query": {
+						"verb": "PUT",
+						"path": {
+							"index": "pages"
+						},
+						"complete": "PUT /pages"
+					},
+					"after": {
+						"acknowledged": true,
+						"shards_acknowledged": true,
+						"index": "pages"
+					},
+					"explain": [
+						"\tIt was created using the default settings, one primary shard and one replica shard",
+						"The health turned yellow. The index is fully functional, but we are at risk of data loss",
+						"in case the node goes down (we only have one node)"
+					]
+				},
+				{
+					"goal": "How to create a field mapping in an non existant index",
+					"related": "s3Lh0CxmUXOQ6rfZ",
+					"query": {
+						"verb": "PUT",
+						"path": {
+							"index": "reviews",
+							"body": {
+								"mappings": {
+									"properties": {
+										"rating": { "type": "float" },
+										"content": { "type": "text" },
+										"product_id": { "type": "integer" },
+										"author": {
+											"properties": {
+												"first_name": { "type": "text" },
+												"last_name": { "type": "text" },
+												"email": { "type": "keyword" }
+											}
+										}
+									}
+								}
+							}
+						},
+						"complete": "PUT /reviews {\"mappings\": { \"properties\": { \"rating\": { \"type\": \"float\" },\"content\": { \"type\": \"text\" },\"product_id\": { \"type\": \"integer\" },\"author\": {\"properties\": {\"first_name\": { \"type\": \"text\" },\"last_name\": { \"type\": \"text\" },\"email\": { \"type\": \"keyword\" }}}}}}"
+					},
+					"result": {
+						"acknowledged": true,
+						"shards_acknowledged": true,
+						"index": "reviews"
+					},
+					"after": {
+						"reviews": {
+							"mappings": {
+								"properties": {
+									"author": {
+										"properties": {
+											"email": {
+												"type": "keyword"
+											},
+											"first_name": {
+												"type": "text"
+											},
+											"last_name": {
+												"type": "text"
+											}
+										}
+									},
+									"content": {
+										"type": "text"
+									},
+									"product_id": {
+										"type": "integer"
+									},
+									"rating": {
+										"type": "float"
+									}
+								}
+							}
+						}
+					}
+				},
+				{
+					"goal": "How to create a field mapping in an non existant index using dot notation",
+					"related": "s3Lh0CxmUXOQ6rfZ",
+					"query": {
+						"verb": "PUT",
+						"path": {
+							"index": "reviews_dot_notation",
+							"body": {
+								"mappings": {
+									"properties": {
+										"rating": { "type": "float" },
+										"content": { "type": "text" },
+										"product_id": { "type": "integer" },
+										"author.first_name": { "type": "text" },
+										"author.last_name": { "type": "text" },
+										"author.email": { "type": "keyword" }
+									}
+								}
+							}
+						},
+						"complete": "PUT /reviews_dot_notation {\"mappings\":{\"properties\":{\"rating\":{\"type\":\"float\"},\"content\":{\"type\":\"text\"},\"product_id\":{\"type\":\"integer\"},\"author.first_name\":{\"type\":\"text\"},\"author.last_name\":{\"type\":\"text\"},\"author.email\":{\"type\":\"keyword\"}}}}"
+					},
+					"result": {
+						"acknowledged": true,
+						"shards_acknowledged": true,
+						"index": "reviews-dot_notation"
+					},
+					"after": {
+						"reviews-dot_notation": {
+							"mappings": {
+								"properties": {
+									"author": {
+										"properties": {
+											"email": {
+												"type": "keyword"
+											},
+											"first_name": {
+												"type": "text"
+											},
+											"last_name": {
+												"type": "text"
+											}
+										}
+									},
+									"content": {
+										"type": "text"
+									},
+									"product_id": {
+										"type": "integer"
+									},
+									"rating": {
+										"type": "float"
+									}
+								}
+							}
+						}
+					},
+					"explain": [
+						"As you can see, the mapping looks exactly the same as previous goal : (How to create a field mapping in an non existant index)",
+						"This is because Elasticsearch translates fields using dot notation into using properties parameter behindthe scenes",
+						"You will therefore never see an index mapping contain the dot notation, as this is simply a shortcut while creating the mapping",
+						"This dot notation is not exclusive to defining field mappings, it can also be used within seach queries"
+					]
+				},
+				{
+					"goal": "1) How to reindex documents",
+					"related": "QCTh6vRMtUegSY3j",
+					"query": {
+						"verb": "PUT",
+						"path": {
+							"index": "reviews_new",
+							"body": {
+								"mappings": {
+									"properties": {
+										"author": {
+											"properties": {
+												"email": {
+													"type": "keyword"
+												},
+												"first_name": {
+													"type": "text"
+												},
+												"last_name": {
+													"type": "text"
+												}
+											}
+										},
+										"content": {
+											"type": "text"
+										},
+										"created_at": {
+											"type": "date"
+										},
+										"product_id": {
+											"type": "keyword"
+										},
+										"rating": {
+											"type": "float"
+										}
+									}
+								}
+							}
+						},
+						"complete": "PUT /reviews_new {\"mappings\":{\"properties\":{\"author\":{\"properties\":{\"email\":{\"type\":\"keyword\"},\"first_name\":{\"type\":\"text\"},\"last_name\":{\"type\":\"text\"}}},\"content\":{\"type\":\"text\"},\"created_at\":{\"type\":\"date\"},\"product_id\":{\"type\":\"integer\"},\"rating\":{\"type\":\"float\"}}}}"
+					},
+					"result": {
+						"acknowledged": true,
+						"shards_acknowledged": true,
+						"index": "reviews_new"
+					}
+				}
+			],
+			"_doc": [
+				{
+					"goal": "How to specify an id when inserting",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "PUT",
+						"path": {
+							"index": "products",
+							"api": "_doc",
+							"_id": "100",
+							"body": {
+								"name": "Coffee Maker",
+								"price": 64,
+								"in_stock": 10
+							}
+						},
+						"complete": "PUT /products/_doc/100 {\"name\": \"Coffee Maker\",\"price\": 64,\"in_stock\": 10}"
+					},
+					"before": null,
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "100",
+						"_version": 1,
+						"_seq_no": 10,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Coffee Maker",
+							"price": 64,
+							"in_stock": 10
+						}
+					}
+				},
+				{
+					"goal": "How to replace a document",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "PUT",
+						"path": {
+							"index": "products",
+							"api": "_doc",
+							"_id": "100",
+							"body": {
+								"name": "Toaster",
+								"price": 79,
+								"in_stock": 4
+							}
+						},
+						"complete": "PUT /products/_doc/101 {\"name\": \"Toaster\",\"price\": 79,\"in_stock\": 4}"
+					},
+					"after": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "101",
+						"_version": 1,
+						"_seq_no": 12,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Toaster",
+							"price": 79,
+							"in_stock": 4
+						}
+					},
+					"explain": [
+						"Since no document with the id of 101 already existed, the contents of the upsert option should have been indexed as a new document",
+						"And as you can see, the 'tags' : ['electronics'] key pair is gone"
+					]
+				},
+				{
+					"goal": "How to create add a document for a field mapping",
+					"related": "s3Lh0CxmUXOQ6rfZ",
+					"query": {
+						"verb": "PUT",
+						"path": {
+							"index": "reviews",
+							"api": "_doc",
+							"id": "1",
+							"body": {
+								"rating": 5.0,
+								"content": "Outstanding course!",
+								"product_id": 123,
+								"author": {
+									"first_name": "Carl",
+									"last_name": "Severe",
+									"email": "csevere@gmail.com"
+								}
+							}
+						},
+						"complete": "PUT /reviews/_doc/1 {\"rating\":5,\"content\":\"Outstanding course!\",\"product_id\":123,\"author\":{\"first_name\":\"Carl\",\"last_name\":\"Severe\",\"email\":\"csevere@gmail.com\"}}"
+					},
+					"result": {
+						"_index": "reviews",
+						"_type": "_doc",
+						"_id": "1",
+						"_version": 1,
+						"result": "created",
+						"_shards": {
+							"total": 2,
+							"successful": 1,
+							"failed": 0
+						},
+						"_seq_no": 0,
+						"_primary_term": 1
+					},
+					"before": null,
+					"after": {
+						"took": 600,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 1,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "reviews",
+									"_type": "_doc",
+									"_id": "1",
+									"_score": 1.0,
+									"_source": {
+										"rating": 5.0,
+										"content": "Outstanding course!",
+										"product_id": 123,
+										"author": {
+											"first_name": "Carl",
+											"last_name": "Severe",
+											"email": "csevere@gmail.com"
+										}
+									}
+								}
+							]
+						}
+					}
+				},
+				{
+					"goal": "How to add a mapping with a specified date",
+					"related": "s3Lh0CxmUXOQ6rfZ",
+					"query": [
+						{
+							"verb": "PUT",
+							"path": {
+								"index": "reviews",
+								"api": "_doc",
+								"_id": "2",
+								"body": {
+									"rating": 4.5,
+									"content": "Not bad",
+									"product_id": 123,
+									"created_at": "2015-03-27",
+									"author": {
+										"first_name": "Average",
+										"last_name": "Joe",
+										"email": "avgj@gmail.com"
+									}
+								}
+							},
+							"complete": "PUT /reviews/_doc/2 {\"rating\":4.5,\"content\":\"Not bad\",\"product_id\":123,\"created_at\":\"2015-03-27\",\"author\":{\"first_name\":\"Average\",\"last_name\":\"Joe\",\"email\":\"avgj@gmail.com\"}}"
+						},
+						{
+							"verb": "PUT",
+							"path": {
+								"index": "reviews",
+								"api": "_doc",
+								"_id": "3",
+								"body": {
+									"rating": 3.5,
+									"content": "Could be better",
+									"product_id": 123,
+									"created_at": "2015-04-15T13:07:41Z",
+									"author": {
+										"first_name": "Spencer",
+										"last_name": "Pearson",
+										"email": "spearson@example.com"
+									}
+								}
+							},
+							"complete": "PUT /reviews/_doc/3 {\"rating\":3.5,\"content\":\"Could be better\",\"product_id\":123,\"created_at\":\"2015-04-15T13:07:41Z\",\"author\":{\"first_name\":\"Spencer\",\"last_name\":\"Pearson\",\"email\":\"spearson@example.com\"}}",
+							"explain": [
+								"Z simply means that the date is in the UTC timezone. The date and time is separated by the letter T",
+								"in order to be compatible with the ISO 8601 specififcation"
+							]
+						},
+						{
+							"verb": "PUT",
+							"path": {
+								"index": "reviews",
+								"api": "_doc",
+								"_id": "4",
+								"body": {
+									"rating": 5.0,
+									"content": "Incredible",
+									"product_id": 123,
+									"created_at": "2015-01-28T09:21:51+01:00",
+									"author": {
+										"first_name": "Adam",
+										"last_name": "Jones",
+										"email": "adam.jones@example.com"
+									}
+								}
+							},
+							"complete": "PUT /reviews/_doc/4 {\"rating\":5,\"content\":\"Incredible\",\"product_id\":123,\"created_at\":\"2015-01-28T09:21:51+01:00\",\"author\":{\"first_name\":\"Adam\",\"last_name\":\"Jones\",\"email\":\"adam.jones@example.com\"}}",
+							"explain": [
+								"If the date is not in UTC, then the UTC offset can be specified instead of Z. Elasticsearch will take this into account when converting the timestamp to a long value"
+							]
+						},
+						{
+							"verb": "PUT",
+							"path": {
+								"index": "reviews",
+								"api": "_doc",
+								"_id": "5",
+								"body": {
+									"rating": 4.5,
+									"content": "Very useful",
+									"product_id": 123,
+									"created_at": "14360112840000",
+									"author": {
+										"first_name": "Taylor",
+										"last_name": "West",
+										"email": "twest@example.com"
+									}
+								}
+							},
+							"complete": "PUT /reviews/_doc/5 {\"rating\":4.5,\"content\":\"Very useful\",\"product_id\":123,\"created_at\":\"14360112840000\",\"author\":{\"first_name\":\"Taylor\",\"last_name\":\"West\",\"email\":\"twest@example.com\"}}",
+							"explain": [
+								"It is really important that you dont specify a UNIX timestamp here, the number of seconds since the epoch. If you do that",
+								"Elasticsearch wont give you an error because it will just treat the number as the number of milliseconds since the epoch",
+								"You might then think that everything is okay since the documents are index correctly. However, when you search for documents within a",
+								"given datew range, you won't get any matches because the dates are actually way in the past. If you do, then multiply it by 1000"
+							]
+						}
+					],
+					"before": null,
+					"after": {
+						"took": 274,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 5,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "reviews",
+									"_type": "_doc",
+									"_id": "1",
+									"_score": 1.0,
+									"_source": {
+										"rating": 5.0,
+										"content": "Outstanding course!",
+										"product_id": 123,
+										"author": {
+											"first_name": "Carl",
+											"last_name": "Severe",
+											"email": "csevere@gmail.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews",
+									"_type": "_doc",
+									"_id": "2",
+									"_score": 1.0,
+									"_source": {
+										"rating": 4.5,
+										"content": "Not bad",
+										"product_id": 123,
+										"created_at": "2015-03-27",
+										"author": {
+											"first_name": "Average",
+											"last_name": "Joe",
+											"email": "avgj@gmail.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews",
+									"_type": "_doc",
+									"_id": "3",
+									"_score": 1.0,
+									"_source": {
+										"rating": 3.5,
+										"content": "Could be better",
+										"product_id": 123,
+										"created_at": "2015-04-15T13:07:41Z",
+										"author": {
+											"first_name": "Spencer",
+											"last_name": "Pearson",
+											"email": "spearson@example.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews",
+									"_type": "_doc",
+									"_id": "4",
+									"_score": 1.0,
+									"_source": {
+										"rating": 5.0,
+										"content": "Incredible",
+										"product_id": 123,
+										"created_at": "2015-01-28T09:21:51+01:00",
+										"author": {
+											"first_name": "Adam",
+											"last_name": "Jones",
+											"email": "adam.jones@example.com"
+										}
+									}
+								},
+								{
+									"_index": "reviews",
+									"_type": "_doc",
+									"_id": "5",
+									"_score": 1.0,
+									"_source": {
+										"rating": 4.5,
+										"content": "Very useful",
+										"product_id": 123,
+										"created_at": "14360112840000",
+										"author": {
+											"first_name": "Taylor",
+											"last_name": "West",
+											"email": "twest@example.com"
+										}
+									}
+								}
+							]
+						}
+					}
+				},
+				{
+					"goal": "Adding missing fields",
+					"related": "s3Lh0CxmUXOQ6rfZ",
+					"explain": [
+						"All fields in Elasticsearch are optional, unlike relational databases where you need to allow NULL values",
+						"Checks for having required fields (integrity checks) need to be done at the application level",
+						"Adding a field mapping does not make a field required"
+					]
+				}
+			],
+			"_mapping": [
+				{
+					"goal": "How to add mappings to existing indices",
+					"related": "s3Lh0CxmUXOQ6rfZ",
+					"query": {
+						"verb": "PUT",
+						"path": {
+							"index": "reviews-dot_notation",
+							"api": "_mapping",
+							"body": {
+								"properties": {
+									"created_at": {
+										"type": "date"
+									}
+								}
+							}
+						},
+						"complete": "PUT /reviews-dot_notation/_mapping {\"properties\":{\"created_at\":{\"type\":\"date\"}}}"
+					},
+					"before": {
+						"reviews": {
+							"mappings": {
+								"properties": {
+									"author": {
+										"properties": {
+											"email": {
+												"type": "keyword"
+											},
+											"first_name": {
+												"type": "text"
+											},
+											"last_name": {
+												"type": "text"
+											}
+										}
+									},
+									"content": {
+										"type": "text"
+									},
+									"product_id": {
+										"type": "integer"
+									},
+									"rating": {
+										"type": "float"
+									}
+								}
+							}
+						}
+					},
+					"after": {
+						"reviews-dot_notation": {
+							"mappings": {
+								"properties": {
+									"author": {
+										"properties": {
+											"email": {
+												"type": "keyword"
+											},
+											"first_name": {
+												"type": "text"
+											},
+											"last_name": {
+												"type": "text"
+											}
+										}
+									},
+									"content": {
+										"type": "text"
+									},
+									"created_at": {
+										"type": "date"
+									},
+									"product_id": {
+										"type": "integer"
+									},
+									"rating": {
+										"type": "float"
+									}
+								}
+							}
+						}
+					},
+					"explain": [
+						"Since we are using the _mappings API, we should not specify the \"mappings\" key as we did when creating the index",
+						"Instead we specify the \"properties\" key at the top levelof the request body"
+					]
+				}
+			]
+		},
+		"DELETE": {
+			"default": [
+				{
+					"goal": "How to delete an index",
+					"query": {
+						"verb": "DELETE",
+						"path": {
+							"index": "pages"
+						},
+						"complete": "DELETE /pages"
+					}
+				}
+			],
+			"_doc": [
+				{
+					"goal": "How to delete a document",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "DELETE",
+						"path": {
+							"index": "products",
+							"api": "_doc",
+							"_id": "101"
+						},
+						"complete": "DELETE /products/_doc/101"
+					},
+					"before": {
+						"_index": "products",
+						"_type": "_doc",
+						"_id": "101",
+						"_version": 1,
+						"_seq_no": 12,
+						"_primary_term": 1,
+						"found": true,
+						"_source": {
+							"name": "Toaster",
+							"price": 79,
+							"in_stock": 4
+						}
+					},
+					"after": null
+				}
+			],
+			"_delete_by_query": [
+				{
+					"goal": "How to delete by query",
+					"related": "9OCyyjUjBv00tGkG",
+					"query": {
+						"verb": "DELETE",
+						"path": {
+							"index": "products",
+							"api": "_delete_by_query",
+							"body": {
+								"query": {
+									"match_all": {}
+								}
+							}
+						},
+						"complete": "POST /products/_delete_by_query {\"query\" : {\"match_all\" : {}}}"
+					}
+				}
+			]
+		}
+	}
+}
