@@ -3616,6 +3616,30 @@
 						"Since we are using the _mappings API, we should not specify the \"mappings\" key as we did when creating the index",
 						"Instead we specify the \"properties\" key at the top levelof the request body"
 					]
+				},
+				{
+					"goal": "How to use field aliases",
+					"related": "QCTh6vRMtUegSY3j",
+					"explain": [
+						"Field names can be changed when reindexing document, but its likely not worth it for lots of documents",
+						"An alternativeis to use field aliases, which doesnt require document to be reindexed"
+					],
+					"query": [
+						{
+							"verb": "PUT",
+							"path": {
+								"api": "_mapping",
+								"body": {
+									"properties": {
+										"comment": {
+											"type": "alias",
+											"path": "content"
+										}
+									}
+								}
+							}
+						}
+					]
 				}
 			]
 		},
