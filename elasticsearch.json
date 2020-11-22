@@ -1476,6 +1476,66 @@
 						"_score : indicates how well the document matched the seach query",
 						"max_score : the highest score for any of the merged documents by default"
 					]
+				},
+				{
+					"goal": "How to search for terms within an array using query DSL with a json object",
+					"related": "WwSENF2UBGd42BdK",
+					"query": {
+						"verb": "GET",
+						"index": "products",
+						"api": "_search",
+						"body": {
+							"query": {
+								"terms": {
+									"tags.keyword": ["squid", "kid", "electronics"]
+								}
+							}
+						},
+						"complete": "GET /products/_search {{\"query\":{\"terms\":{\"tags.keyword\":[\"squid\",\"kid\",\"electronics\"]}}}"
+					},
+					"result": {
+						"took": 0,
+						"timed_out": false,
+						"_shards": {
+							"total": 1,
+							"successful": 1,
+							"skipped": 0,
+							"failed": 0
+						},
+						"hits": {
+							"total": {
+								"value": 2,
+								"relation": "eq"
+							},
+							"max_score": 1.0,
+							"hits": [
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "300",
+									"_score": 1.0,
+									"_source": {
+										"name": "Splatoon",
+										"price": "60",
+										"in_stock": 5,
+										"tags": ["squid", "kid"]
+									}
+								},
+								{
+									"_index": "products",
+									"_type": "_doc",
+									"_id": "101",
+									"_score": 1.0,
+									"_source": {
+										"price": 64,
+										"name": "Coffee Maker",
+										"in_stock": 2,
+										"tags": ["electronics"]
+									}
+								}
+							]
+						}
+					}
 				}
 			],
 			"_mapping": [
