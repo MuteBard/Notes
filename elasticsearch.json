@@ -3568,7 +3568,7 @@
 			]
 		},
 		"PUT": {
-			"default": [
+			"none": [
 				{
 					"goal": "How to create a new index",
 					"query": {
@@ -4294,7 +4294,7 @@
 			]
 		},
 		"DELETE": {
-			"default": [
+			"none": [
 				{
 					"goal": "How to delete an index",
 					"query": {

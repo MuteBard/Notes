@@ -1,0 +1,348 @@
+{
+	"topic": "Regex",
+	"course": "https://www.udemy.com/course/regular-expressions-mastery/",
+	"terminology": {
+		"regex": {
+			"definition": [
+				"Regular expressions are a way to search for patterns within data sets",
+				"It is a sequence of characters that define a search pattern",
+				"They are not a programming language"
+			]
+		},
+		"POSIX": {
+			"definition": [
+				"Portable Operating System Interface. Almost all major regex engines are POSIX standards compliant"
+			],
+			"example": "grep 'fooa*bar <name>.txt"
+		}
+	},
+	"tools": {
+		"astrix": {
+			"symbol": "*",
+			"definition": [
+				"It stand for zero or more occurances of the literal that immediately precedes the asterisk"
+			],
+			"example": [
+				"If you were to say a*, it would mean 0 or more occurances of a"
+			],
+			"input": [
+				"fooaaaabar",
+				"fooabar",
+				"foobar",
+				"fooaabar",
+				"fooxxxbar",
+				"fooxbar"
+			],
+			"output": ["fooaaaabar", "fooabar", "foobar", "fooaabar"],
+			"regex": "fooa*bar"
+		},
+		"wildcard": {
+			"symbol": ".",
+			"definition": ["A wildcard character that represents any character"],
+			"input": [
+				"fooabar",
+				"fooxbar",
+				"baryfoo",
+				"foobar",
+				"fooxybar",
+				"foocbar"
+			],
+			"output": ["fooabar", "fooxbar", "foocbar"],
+			"regex": "foo.bar"
+		},
+		"whitespace": {
+			"warning": "reverse all instances of frontslash in this object to backslash",
+			"symbol": "/s",
+			"definition": ["Represents whitespace"],
+			"input": [
+				"fooxxxbar",
+				"foo  bar",
+				"fooxbar",
+				"fooxxbar",
+				"foo bar",
+				"foo   bar",
+				"foobar",
+				"fooyyybar"
+			],
+			"output": ["foo  bar", "foo bar", "foo   bar", "foobar"],
+			"regex": "foo/s*bar"
+		},
+		"characterclass": {
+			"symbol": "[pqr]",
+			"definition": [
+				"A characterclass single character which can be either be 'p','q', or an'r'"
+			],
+			"input": ["foo", "moo", "coo", "doo", "poo", "loo", "boo", "hoo"],
+			"output": ["foo", "coo", "loo"],
+			"regex": "[fcl]oo"
+		},
+		"characterrange": {
+			"symbol": "[a-d]",
+			"definition": [
+				"A single character that falls in range 'a-d' one of 'a', 'b', 'c', or 'd"
+			],
+			"input": ["joo", "boo", "koo", "loo", "woo", "moo", "zoo", "coo"],
+			"output": ["joo", "koo", "loo", "moo"],
+			"regex": "[j-m]oo"
+		},
+		"characterclassexclusion": {
+			"symbol": "[^pq]",
+			"definition": ["A single character that is neither 'p' nor 'q'"],
+			"input": ["foo", "moo", "coo", "doo", "poo", "loo", "boo", "hoo"],
+			"output": ["foo", "coo", "doo", "poo", "loo", "boo"],
+			"regex": "[^mh]oo"
+		},
+		"beginning": {
+			"symbol": "^",
+			"definition": [
+				"1)  ^ is an anchor tag that represents the beginning of the line (only first instance)",
+				"2) The interpretation differs within square brackets and outside, meaning negation for inside"
+			],
+			"input": [
+				"foo bar baz",
+				"bar foo baz",
+				"baz foo bar",
+				"bar baz foo",
+				"foo baz bar",
+				"baz bar foo"
+			],
+			"output": ["foo bar baz", "foo baz bar"],
+			"regex": "^foo.*"
+		},
+		"ending": {
+			"symbol": "$",
+			"definition": [
+				"$ is an achor tag that represents the ending of the line"
+			],
+			"input": [
+				"foo bar baz",
+				"bar foo baz",
+				"baz foo bar",
+				"bar baz foo",
+				"foo baz bar",
+				"baz bar foo"
+			],
+			"output": ["baz foo bar", "foo baz bar"],
+			"regex": ".*bar$"
+		},
+		"plus": {
+			"symbol": "+",
+			"definition": [
+				"very similar to asterix but One or more occurances of the character that precedes this + symbol"
+			],
+			"input": [
+				"fooaaaabar",
+				"fooabar",
+				"foobar",
+				"fooaabar",
+				"fooxxxbar",
+				"fooxbar"
+			],
+			"output": ["fooaaaabar", "fooabar", "fooaabar"],
+			"regex": "fooa+bar"
+		},
+		"Binary": {
+			"symbol": "?",
+			"definition": [
+				"Zero or one occurance of the character that precedes this quesion mark"
+			],
+			"input": [
+				"https://website",
+				"http://website",
+				"httpss://website",
+				"httpx://website",
+				"httpxx://website"
+			],
+			"output": ["https://website", "http://website"],
+			"regex": "https?://website"
+		},
+		"pipe": {
+			"symbol": "|",
+			"definition": [
+				"Matches either the pattern pat1 or the pattern pat2. Pipe is a way of making an alternative choice",
+				"between two options"
+			],
+			"input": [
+				"sapwood",
+				"rosewood",
+				"logwood",
+				"teakwood",
+				"plywood",
+				"redwood"
+			],
+			"output": ["logwood", "plywood"],
+			"regex": "(log|ply)wood"
+		},
+		"parentheses": {
+			"symbol": "()",
+			"definition": ["Divides patterns into groups"],
+			"input": [
+				"ha",
+				"hahahahaha",
+				"hahaha",
+				"hahahaha",
+				"kangaroo",
+				"haha",
+				"",
+				"hahahahahaha",
+				"hahahahahahahaha",
+				"hahahahahahahahaha"
+			],
+			"output": [
+				"hahahahaha",
+				"hahahaha",
+				"hahahahahaha",
+				"hahahahahahahaha",
+				"hahahahahahahahaha"
+			],
+			"regex": "(ha){4,}",
+			"explain": ["At least 4 repetiions of 'ha' should be present"]
+		},
+		"brackets": {
+			"relatedId": { "id": "regex-aaa", "number": "2" },
+			"symbol": "{}",
+			"definition": ["Exactly 'm' occurances of whatever precedes"],
+			"input": ["834", "519", "4874", "5", "89", "45687", "25", "645"],
+			"output": ["834", "519", "645"],
+			"regex": "^[0-9]{3}$",
+			"explain": [
+				"why do we need these; ^ and $. The reason is that we do NOT want matches done with a subset of string",
+				"Also, this can be cumbersomeif we have more digits. we need a more compact way to write this",
+				"the repeater makes this possible. The limitation with asterisk is that you can't represent an",
+				"exact number of repetitions with it. the curly braces repeater allows you to specify exactly m repetitions"
+			]
+		},
+		"single-ended-repeater": {
+			"definition": ["Divides patterns into groups"],
+			"input": [
+				"ha",
+				"hahahahaha",
+				"hahaha",
+				"hahahaha",
+				"kangaroo",
+				"haha",
+				"",
+				"hahahahahaha",
+				"hahahahahahahaha",
+				"hahahahahahahahaha"
+			],
+			"output": ["haha", "ha"],
+			"regex": "(ha){,2}",
+			"explain": ["At most 2 repetiions of 'ha' should be present"]
+		},
+		"double-ended-repeater": {
+			"symbol": "{m,n}",
+			"relatedId": { "id": "regex-aab", "number": "2" },
+			"input": [
+				"lion",
+				"tiger",
+				"leopard",
+				"fox",
+				"kangaroo",
+				"bat",
+				"mouse",
+				"cuckoo",
+				"deer"
+			],
+			"output": ["lion", "tiger", "mouse", "cuckoo", "deer"],
+			"regex": "^[a-z]{4,6}$",
+			"explain": [
+				"So can we create a range of repetitions rather than an exact repetition?",
+				"This leads us to a slightly different flavor of the curly braces repeator",
+				"So this means any word made up of english alphabets which is at least made up of 4 letters",
+				"and at most made up of 6 letters is valid"
+			]
+		}
+	},
+	"combinations": {
+		"wildcard-astrix": {
+			"input": [
+				"fooabar",
+				"barfoo",
+				"fooabcbar",
+				"foobxbar",
+				"foozbar",
+				"barafoo",
+				"barabfoo"
+			],
+			"output": ["foobar", "fooabcbar", "foobxcbar", "foozbar"],
+			"regex": "foo.*bar"
+		},
+		"astrix-backslash": {
+			"warning": "reverse all instances of frontslash in this object to backslash",
+			"input": [
+				"xxx.yy",
+				"xx.yyyy",
+				"x.yy",
+				"xy",
+				"xxyy",
+				"yyxx",
+				"yx",
+				"yxxx"
+			],
+			"output": ["xxx.yy", "xx.yyyy", "x.yy"],
+			"regex": ["x*/.y*"]
+		},
+		"characterrange-outlier": {
+			"input": ["joo", "boo", "koo", "loo", "woo", "moo", "zoo", "coo"],
+			"output": ["joo", "koo", "loo", "moo", "zoo"],
+			"regex": "[j-mz]oo"
+		},
+		"characterrange-outlier-case": {
+			"input": ["joo", "boo", "Koo", "Loo", "woo", "moo", "zoo", "coo"],
+			"output": ["joo", "Koo", "loo", "moo", "zoo"],
+			"regex": "[j-mJ-Mz]oo"
+		},
+
+		"multiple-backslash": {
+			"warning": "reverse all instances of frontslash in this object to backslash",
+			"input": ["x#y", "x/y", "x^y", "x&y", "x%y"],
+			"output": ["x#y", "x/y", "x^y"],
+			"reget": "x[#///^]y"
+		},
+		"numbers": {
+			"relatedId": { "id": "regex-aaa", "number": "1" },
+			"input": ["834", "519", "4874", "5", "89", "45687", "25", "645"],
+			"output": ["834", "519", "645"],
+			"regex": "^[0-9][0-9][0-9]$",
+			"explain": [
+				"why do we need these; ^ and $. The reason is that we do NOT want matches done with a subset of string",
+				"Also, this can be cumbersomeif we have more digits. we need a more compact way to write this",
+				"the repeater makes this possible. The limitation with asterisk is that you can't represent an",
+				"exact number of repetitions with it. the curly braces repeater allows you to specify exactly m repetitions"
+			],
+			"goto": { "id": "regex-aaa", "number": "2" }
+		},
+		"letters": {
+			"relatedId": { "id": "regex-aab", "number": "1" },
+			"input": [
+				"lion",
+				"tiger",
+				"leopard",
+				"fox",
+				"kangaroo",
+				"bat",
+				"mouse",
+				"cuckoo",
+				"deer"
+			],
+			"output": ["lion", "tiger", "mouse", "cuckoo", "deer"],
+			"regex-incomplete": [
+				"^[a-z]{4}",
+				"^[a-z]{5}",
+				"^[a-z]{5}",
+				"^[a-z]{6}",
+				"^[a-z]{4}"
+			],
+			"regex": "^[a-z]{4,6}$",
+			"explain": [
+				"So can we create a range of repetitions rather than an exact repetition?",
+				"This leads us to a slightly different flavor of the curly braces repeator",
+				"So this means any word made up of english alphabets which is at least made up of 4 letters",
+				"and at most made up of 6 letters is valid"
+			],
+			"goto": { "id": "regex-aab", "number": "2" }
+		},
+		"letters2": {}
+	}
+}
